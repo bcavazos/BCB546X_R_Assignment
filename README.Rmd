@@ -1,0 +1,29 @@
+---
+title: "BCB546 R Assignment"
+author: "Brittany Cavazos"
+date: "September 30, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data Inspection
+
+First I need to read in the data and briefly look over the structure of the datasets
+```{r reading in data}
+genotypes_raw<-read.delim("fang_et_al_genotypes.txt", header = T, sep = "\t")
+dim(genotypes_raw)
+head(genotypes_raw[,1:5]) # just showing the output of first five columns for all of these inspections because there are a ton of columns..
+tail(genotypes_raw[,1:5])
+# str(genotypes_raw) output is pretty long
+snp_pos<-read.delim("snp_position.txt", header = T, sep = "\t")
+dim(snp_pos)
+head(snp_pos[,1:5])
+tail(snp_pos[,1:5])
+# str(snp_pos)
+```
+
+## Data Analysis
+
