@@ -25,5 +25,55 @@ tail(snp_pos[,1:5])
 # str(snp_pos)
 ```
 
+Next I need to transpose the data and subset to maize and teosinte datasets. 
+For maize: Group = ZMMIL, ZMMLR, and ZMMMR 
+```{r}
+summary(genotypes_raw$Group)
+  # for ZMMIL, ZMMLR and ZMMMR, we want a total maize subset that is 1573 rows long
+maize_raw<-dplyr::filter(genotypes_raw, Group == "ZMMIL" | Group == "ZMMLR" | Group == "ZMMMR")
+  # there is probaby a shorter way of doing this but it works
+
+  # not to transpose it to have SNP ID as columns
+names(maize_raw)[1:25]
+maize_T<-as.data.frame(t(maize_raw))
+dim(maize_T)
+Maize_IDs<-as.character(maize_raw$Sample_ID)
+colnames(maize_T)<-Maize_IDs
+```
+
+For teosinte: Group = ZMPBA, ZMPIL, and ZMPJA 
+```{r}
+teosinte_raw<-dplyr::filter(genotypes_raw, Group == "ZMPBA" | Group == "ZMPIL" | Group == "ZMPJA")
+  # there is probaby a shorter way of doing this but it works
+  # should be 975 rows after looking at summary(genotypes$Group)
+dim(teosinte_raw)
+  # not to transpose it to have SNP ID as columns
+names(teosinte_raw)[1:25]
+teosinte_T<-as.data.frame(t(teosinte_raw))
+dim(teosinte_T)
+Teosinte_IDs<-as.character(teosinte_raw$Sample_ID)
+colnames(teosinte_T)<-Teosinte_IDs # after transposing we got weird column names so this is a way to fix that
+
+```
+Now I need to join together the snp_pos with the other two data sets, but I only need a couple columns from the snp data set
+```{r}
+names(snp_pos)
+snp_pos<-dplyr::select(snp_pos, SNP_ID, Chromosome, Position)
+  # usally writing over data frames isn't great but this is probably fine
+
+```
+Now I need to prep the data sets for merges - we will join maize/teosinte with snp_pos by snp id
+```{r}
+
+# need to add a column in both maize and teosinte that is the snp id - currently its only as the rowname
+
+maize_T_forjoin<-maize_T[4:986,] # to join the snpid info we have to get rid of some of the sample info, we can tack this back on at the end if we need to
+teosinte_T_forjoin<-teosinte_T[4:986,]
+
+
+
+```
+
+
 ## Data Analysis
 
