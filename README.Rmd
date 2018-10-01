@@ -66,14 +66,48 @@ Now I need to prep the data sets for merges - we will join maize/teosinte with s
 ```{r}
 
 # need to add a column in both maize and teosinte that is the snp id - currently its only as the rowname
+row.names(snp_pos)<-as.character(snp_pos$SNP_ID)
 
 maize_T_forjoin<-maize_T[4:986,] # to join the snpid info we have to get rid of some of the sample info, we can tack this back on at the end if we need to
 teosinte_T_forjoin<-teosinte_T[4:986,]
 
-
+maizejoined<-merge(snp_pos, maize_T_forjoin, by = "row.names", all = F)
+dim(maizejoined)
+maizejoinedF<-dplyr::select(maizejoined, -Row.names)
+teosintejoined<-merge(snp_pos, teosinte_T_forjoin, by = "row.names", all = F)
+dim(teosintejoined)
+teosintejoinedF<-dplyr::select(teosintejoined, -Row.names) # F for final
 
 ```
 
+## Data Processing
+_For Maize_
+Now we need to make 10 files (1 for each chromosome) with SNPs ordered based on increasing position values and with missing data encoded by this symbol: ? 
+# 
+```{r}
+head(maizejoinedF[maizejoinedF$Chromosome == 1,]) # they are currently out of order
 
-## Data Analysis
+# first let's make chromosome and position numeric
+maizejoinedF$Chromosome<-as.numeric(maizejoinedF$Chromosome)
+maizejoinedF$Position<-as.numeric(maizejoinedF$Position)
+# sort by chromosome, then position
+library(dplyr) # not totally sure if this is needed or not
+maizejoined_sorted <- maizejoinedF %>% group_by(Chromosome)
+maizejoined_sorted <- maizejoined_sorted %>% arrange(Position, .by_group = T)
 
+# now subset and save data frames by chromosome (? already show missing data)
+
+for (i in 1:10) {
+  Chr_i<- dplyr::filter(maizejoined_sorted, Chromosome == i)
+  filename <- paste("MaizeChromosome", i, ".txt", sep="")
+  write.table(Chr_i, file = filename, sep = "\t")
+}
+
+# now reverse the sorting and replace ? with -
+maizejoined_sortedR <- maizejoinedF %>% group_by(Chromosome)
+maizejoined_sortedR <- maizejoined_sortedR %>% arrange(desc(Position), .by_group = T)
+head(maizejoined_sortedR)
+
+# need to make snps characters
+# and then use gsub
+```
