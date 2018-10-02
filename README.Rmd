@@ -83,6 +83,7 @@ teosintejoinedF<-dplyr::select(teosintejoined, -Row.names) # F for final
 
 ## Data Processing
 _For Maize_
+
 Now we need to make 10 files (1 for each chromosome) with SNPs ordered based on increasing position values and with missing data encoded by this symbol: ? 
 # 
 ```{r}
@@ -100,11 +101,11 @@ maizejoined_sorted <- maizejoined_sorted %>% arrange(Position, .by_group = T)
 Making the for loop by subsetting the data by already ordered chromosomes
 ```{r}
 #this creates files that are pretty big and actually ended up crashing rstudio... they are commented out for now
-#for (i in 1:10) {
-#  Chr_i<- dplyr::filter(maizejoined_sorted, Chromosome == i)
-#  filename <- paste("MaizeChromosome", i, ".txt", sep="")
-#  write.table(Chr_i, file = filename, sep = "\t")
-#}
+for (i in 1:10) {
+  Chr_i<- dplyr::filter(maizejoined_sorted, Chromosome == i)
+  filename <- paste("MaizeChromosome", i, ".txt", sep="")
+  write.table(Chr_i, file = filename, sep = "\t")
+}
 ```
 
 
@@ -122,19 +123,20 @@ maizejoined_reverse[,4:1576]<-(as.character(unlist(maizejoined_reverse[,4:1576])
 tail(maizejoined_reverse[,4:1576], n=2)
 maize_reversefinal<-as.data.frame(lapply(maizejoined_reverse, function(x) {gsub("\\?","-", x)}))
 
-tail(test[,4:1576], n=2)
+
 
 ```
 Now to write these out 
 ```{r}
-#for (i in 1:10) {
-#  Chr_i<- dplyr::filter(maize_reversefinal, Chromosome == i)
-#  filename <- paste("MaizeChr_reverseorder", i, ".txt", sep="")
-#  write.table(Chr_i, file = filename, sep = "\t")
-#}
+for (i in 1:10) {
+  Chr_i<- dplyr::filter(maize_reversefinal, Chromosome == i)
+  filename <- paste("MaizeChr_reverseorder", i, ".txt", sep="")
+  write.table(Chr_i, file = filename, sep = "\t")
+}
 ```
 
 _For Teosinte_
+
 For teosinte, we will follow the same steps as in the maize files
 Now we need to make 10 files (1 for each chromosome) with SNPs ordered based on increasing position values and with missing data encoded by this symbol: ? 
 # 
@@ -175,7 +177,6 @@ teosintejoined_reverse[,4:978]<-(as.character(unlist(teosintejoined_reverse[,4:9
 tail(teosintejoined_reverse[,4:978], n=2)
 teosinte_reversefinal<-as.data.frame(lapply(teosintejoined_reverse, function(x) {gsub("\\?","-", x)}))
 
-tail(teosinte_reversefinal[,4:1576], n=2)
 
 ```
 Now to write these out 
@@ -188,6 +189,7 @@ Now to write these out
 ```
 
 # Part Two
+
 Use ggplot to visualize our data in this part
 
 First, I need to make tidy datasets for both corn and teosinte
@@ -203,10 +205,9 @@ head(snpMelt)
 SNPs$Chromosome<-factor(SNPs$Chromosome, levels = c(1:10, "multiple", "unknown"))
 
 ggplot(SNPs) + geom_bar(aes(x=Chromosome)) + theme_bw() + labs(x="Chromosome",y="SNP Count") 
-
 # SNPS per chromosome 
 # Plot the total number of SNPs in our dataset on each chromosome. What groups contribute most of these SNPs? 
-View(head(genotypes_raw))
+
 ```
 Chromosome 1 seems to have the most snps 
 
@@ -228,6 +229,66 @@ SiteStatus <- function(x){
 tidy_genotypes$sitestatus<-as.character(lapply(tidy_genotypes$SNP, FUN = SiteStatus))
 
 # it worked!
+```
 
+Now I will sort the dataframe using Group and Species_ID values
+```{r}
+tidy_genotypes_sorted <- tidy_genotypes %>% group_by(Group)
+tidy_genotypes_sorted <- tidy_genotypes_sorted %>% arrange(Sample_ID, .by_group = T)
+tidy_genotypes_sorted <- tbl_df(tidy_genotypes_sorted)
+```
+
+Make a graph that shows the proportion of homozygous and heterozygous sites as well as missing data in each species (you won't be able to see species names) and each group. 
+
+```{r}
+# currently sitestatus is a character so we need to make it a factor
+tidy_genotypes_sorted$sitestatus<-as.factor(tidy_genotypes_sorted$sitestatus)
+summarygroup <- tidy_genotypes_sorted %>% 
+  group_by(Group, sitestatus) %>% 
+  summarise(length(sitestatus)) # this will get number of snps for homo/hetero/na at each group (still not getting at species level though)
+colnames(summarygroup)[3]<-"snpcount"
+
+
+ggplot(summarygroup, aes(Group, snpcount, fill=sitestatus)) + 
+    geom_bar(stat="identity", position = "fill") + 
+    labs(x="Group", y="Proportion")+ theme_bw()
+
+```
+
+And a final visualization of my choice
+```{r}
+summarysample<- tidy_genotypes_sorted %>% 
+  group_by(Sample_ID, sitestatus) %>% 
+  summarise(length(sitestatus)) 
+colnames(summarysample)[3]<-"snpcount"
+
+groupinfo<-select(genotypes_raw, Sample_ID, Group)
+summarysample <-merge(summarysample, groupinfo, by = "Sample_ID", all = F)
+
+#for maize
+summarysample_maize<-dplyr::filter(summarysample, Group == "ZMMIL" | Group == "ZMMLR" | Group == "ZMMMR")
+
+#maize plot
+ggplot(summarysample_maize, aes(Sample_ID, snpcount, fill=sitestatus)) + 
+    geom_bar(stat="identity", position = "fill") + 
+    facet_grid(.~Group, scales = "free")+ 
+    labs(x="Sample", y="Proportion")+ theme(axis.text.x = element_text(angle = 60, hjust = 1))
+
+
+#for teosinte
+summarysample_teo<-dplyr::filter(summarysample, Group == "ZMPBA" | Group == "ZMPIL" | Group == "ZMPJA")
+ggplot(summarysample_maize, aes(Sample_ID, snpcount, fill=sitestatus)) + 
+    geom_bar(stat="identity", position = "fill") + 
+    facet_grid(.~Group, scales = "free")+ 
+    labs(x="Sample", y="Proportion")+ theme(axis.text.x = element_text(angle = 60, hjust = 1))
+
+ggplot(summarysample, aes(Sample_ID, snpcount, fill=sitestatus)) + 
+    geom_bar(stat="identity", position = "fill") + 
+    facet_grid(.~Group, scales = "free")+ 
+    labs(x="Sample", y="Proportion")+ theme(axis.text.x = element_text(angle = 60, hjust = 1))
+
+
+#candidates vs random across chromosomes
+ggplot(SNPs) + geom_bar(aes(x=Chromosome, fill = candidate.random), position = "dodge") + theme_bw()
 
 ```
