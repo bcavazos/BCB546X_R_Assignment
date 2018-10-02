@@ -155,11 +155,11 @@ teosintejoined_sorted <- teosintejoined_sorted %>% arrange(Position, .by_group =
 Making the for loop by subsetting the data by already ordered chromosomes
 ```{r}
 #this creates files that are pretty big and actually ended up crashing rstudio... they are commented out for now
-#for (i in 1:10) {
-#  Chr_i<- dplyr::filter(teosintejoined_sorted, Chromosome == i)
-#  filename <- paste("TeosinteChromosome", i, ".txt", sep="")
-#  write.table(Chr_i, file = filename, sep = "\t")
-#}
+for (i in 1:10) {
+  Chr_i<- dplyr::filter(teosintejoined_sorted, Chromosome == i)
+  filename <- paste("TeosinteChromosome", i, ".txt", sep="")
+  write.table(Chr_i, file = filename, sep = "\t")
+}
 ```
 
 
@@ -181,11 +181,11 @@ teosinte_reversefinal<-as.data.frame(lapply(teosintejoined_reverse, function(x) 
 ```
 Now to write these out 
 ```{r}
-#for (i in 1:10) {
-#  Chr_i<- dplyr::filter(teosinte_reversefinal, Chromosome == i)
-#  filename <- paste("TeosinteChr_reverseorder", i, ".txt", sep="")
-#  write.table(Chr_i, file = filename, sep = "\t")
-#}
+for (i in 1:10) {
+  Chr_i<- dplyr::filter(teosinte_reversefinal, Chromosome == i)
+  filename <- paste("TeosinteChr_reverseorder", i, ".txt", sep="")
+  write.table(Chr_i, file = filename, sep = "\t")
+}
 ```
 
 # Part Two
