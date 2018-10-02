@@ -9,8 +9,9 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Data Inspection
+# Part One
 
+## Data Inspection
 First I need to read in the data and briefly look over the structure of the datasets
 ```{r reading in data}
 genotypes_raw<-read.delim("fang_et_al_genotypes.txt", header = T, sep = "\t")
@@ -119,12 +120,86 @@ head(maizejoined_reverse)
 
 maizejoined_reverse[,4:1576]<-(as.character(unlist(maizejoined_reverse[,4:1576])))
 tail(maizejoined_reverse[,4:1576], n=2)
+maize_reversefinal<-as.data.frame(lapply(maizejoined_reverse, function(x) {gsub("\\?","-", x)}))
 
-#gsub("\\?", "\-", maizejoined_reverse) this line doesn't work yet
+tail(test[,4:1576], n=2)
+
+```
+Now to write these out 
+```{r}
+#for (i in 1:10) {
+#  Chr_i<- dplyr::filter(maize_reversefinal, Chromosome == i)
+#  filename <- paste("MaizeChr_reverseorder", i, ".txt", sep="")
+#  write.table(Chr_i, file = filename, sep = "\t")
+#}
 ```
 
-# need to make snps characters
+_For Teosinte_
+For teosinte, we will follow the same steps as in the maize files
+Now we need to make 10 files (1 for each chromosome) with SNPs ordered based on increasing position values and with missing data encoded by this symbol: ? 
+# 
+```{r}
+head(teosintejoinedF[teosintejoinedF$Chromosome == 1,]) # they are currently out of order
+
+# first let's make chromosome and position numeric
+teosintejoinedF$Chromosome<-as.numeric(teosintejoinedF$Chromosome)
+teosintejoinedF$Position<-as.numeric(teosintejoinedF$Position)
+# sort by chromosome, then position
+library(dplyr) # not totally sure if this is needed or not
+teosintejoined_sorted <- teosintejoinedF %>% group_by(Chromosome)
+teosintejoined_sorted <- teosintejoined_sorted %>% arrange(Position, .by_group = T)
+```
+
+Making the for loop by subsetting the data by already ordered chromosomes
+```{r}
+#this creates files that are pretty big and actually ended up crashing rstudio... they are commented out for now
+#for (i in 1:10) {
+#  Chr_i<- dplyr::filter(teosintejoined_sorted, Chromosome == i)
+#  filename <- paste("TeosinteChromosome", i, ".txt", sep="")
+#  write.table(Chr_i, file = filename, sep = "\t")
+#}
+```
 
 
-# and then use gsub
+To make the second 10 files in the reverse order with missing data encoded by "-", we need to reverse the sorting and replace ? with -
+
+```{r}
+teosintejoined_reverse <- teosintejoinedF %>% group_by(Chromosome)
+teosintejoined_reverse <- teosintejoined_reverse %>% arrange(desc(Position), .by_group = T)
+head(teosintejoined_reverse)
+
+# make all of the SNP columns into characters 
+#as.character(maizejoined_reverse[,4])
+
+teosintejoined_reverse[,4:978]<-(as.character(unlist(teosintejoined_reverse[,4:978])))
+tail(teosintejoined_reverse[,4:978], n=2)
+teosinte_reversefinal<-as.data.frame(lapply(teosintejoined_reverse, function(x) {gsub("\\?","-", x)}))
+
+tail(teosinte_reversefinal[,4:1576], n=2)
+
+```
+Now to write these out 
+```{r}
+#for (i in 1:10) {
+#  Chr_i<- dplyr::filter(teosinte_reversefinal, Chromosome == i)
+#  filename <- paste("TeosinteChr_reverseorder", i, ".txt", sep="")
+#  write.table(Chr_i, file = filename, sep = "\t")
+#}
+```
+
+# Part Two
+Use ggplot to visualize our data in this part
+
+First, I need to make tidy datasets for both corn and teosinte
+```{r}
+library(reshape2); library(ggplot2)
+head(snp_pos)
+# I wrote over the original snp_pos to make it only 3 variables so here I'm going back to the orig
+SNPs<-read.delim("snp_position.txt", header = T, sep = "\t")
+
+snpMelt<-melt(SNPs, "Chromosome", "SNP_ID")
+head(snpMelt)
+# make chrom. integer so it plots in order
+snpMelt$Chromosome<-as.factor(snpMelt$Chromosome)
+ggplot(snpMelt) + geom_bar(aes(x=Chromosome)) + theme_bw() + labs(x="Chromosome",y="SNP Count")
 ```
