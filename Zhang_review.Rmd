@@ -1,0 +1,19 @@
+---
+title: "Zhang_review"
+output: html_document
+---
+
+##  Comments for PartI
+1 It would be easier or more clear for people to find you scripts if you could copy and paste your scripts from README.Rmd to a new markdown file with a name like "R_homwork.Rmd"
+
+2 It seems to me that you didn't filter or remove SNPs with "unknown" and "multiple" positions. I feel this additional step is necessary before we subset our data according to our R assignment requirement. 
+
+3 I am not sure how you combine snp file and maize and teosinte genotype files. From what I saw in your final sorted files, the information in the "Position" column is wrong. The information provided by your intermediate file and final sorted files in "Position" column didn't match the original file. These information should remain unchanged. In this part, we only need to filter, combine, arrange and sort files, nothing in the original columns should be modified.
+  
+## Comments for PartII
+1 This part looks good to me. Except some marks in the x axis seem a litter difficult to read because they all overlap together. I am not sure if you could find some way to modify them.
+
+Dandan
+
+
+  
