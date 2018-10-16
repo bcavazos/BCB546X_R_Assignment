@@ -1,0 +1,90 @@
+---
+title: "Tibbs_Review"
+author: "Laura Tibbs"
+date: "October 12, 2018"
+output: html_document
+---
+
+---
+title: "Tibbs_review"
+author: "Laura Tibbs"
+date: "October 12, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Review of BCB 546X R Assignment for Brittany Cavazos
+
+## Positive points:
+
+### Overall: 
+
+* The code ran on my computer and produced output (graphs and sorted genotype files). It did throw one warning, but it did run.
+
+* Steps were labeled and described in text and comments.
+
+### Data inspection:
+
+* The data files were inspected with code to show dimension and the head and tail.
+
+### Output files:
+
+* Maize and teosinte data were split correctly.
+
+* Missing data was encoded as requested.
+
+* 40 output files were produced and named as they should be.
+
+* The positions in the files were sorted numerically ascending or descending as appropriate.
+
+### Graphs: 
+
+* SNPs per chromosome were plotted with chromosome correctly arranged numerically.
+
+For the heterozygosity graph:
+
+* Data was sorted by species and group.
+
+* The graphs successfully show the proportion of homozygous, hetreozygous and NA sites by species and group (and normalizes the bar heights for the group graphs). Some of these graphs are AFTER the "final visualization of my choice" label, but they are there.
+
+The visualization of their choice showed the count of candidate vs. random genes across all chromosomes.
+
+## Problems/Suggestions for improvement:
+
+### Overall:
+
+* The organization of the repository is somewhat confusing because the output, input, and source files are not organized into any subfolders. Still, everything is there.
+
+* In a couple of cases, `head()` was used to print very long files to the Rmd file; it might have been better not to print so much of the file by using `head(as.tibble())` to improve readability.
+
+### Data inspection:
+
+* File size was not found, as requested in the assignment sheet.
+
+### Output files: 
+
+The column names are shifted in the output files; it looks like the column named SNP_ID actually just contains sequential numbers (looks like thes are the rownames from the data frame used to produce the files), Chromosome contains the SNP_ID, Position contains the Chromosome, and all the other column headers are similarly shifted. This shift was introduced by using `write.table()`, which writes row names to a column by default. Once this extra column of row names was written, there were not enough column names to match all of the columns and this produced the shift observed in the final files.
+
+The positions (mistakenly under the heading ZDP_0752a in the maize files and S0881 in teosinte files) are also incorrect; it looks like the positions got miscoded at this step:
+
+``` {r eval=F}
+maizejoinedF$Position<-as.numeric(maizejoinedF$Position)
+```
+
+ * Rather confusingly, this needed to be `as.numeric(as.character(maizejoinedF$Position))` instead to avoid miscoding the positions when converting from a factor.
+ 
+
+### Graphs:
+
+For SNPs per chromosome:
+
+* All SNPs were plotted rather than only those SNPs that varied WITHIN groups as Dr. Lavrov clarified on Slack. This was not part of the original assignment statement, however.
+
+* The assignment asked which group contribute most of the SNPs, but this was not answered in the graph or in text; instead, they answered which chromosome (not which group) contributed the most SNPs.
+
+
+
+  
